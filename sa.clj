@@ -7,13 +7,13 @@
 
 (defrecord Ship [rooms])
 
-(def *order* [:red-up :white-up :blue-up])
-
+(def *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
 (defn create-initial-ship [num-players]
-  (Ship. {:red-up []
-	  :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players))))
-	  :blue-up []}))
+  (Ship.
+   (assoc
+       (reduce (fn [m r] (assoc m r [])) {} *rooms*)
+     :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))))
 
 (defn find-player [ship player]
   (first (first
@@ -21,19 +21,27 @@
 	   (fn [[room contents]] (some #{player} contents))
 	   (:rooms ship)))))
 
+(defn- move-grav-lift [zone deck]
+  (keyword (str zone "-" (if (= deck "up") "down" "up"))))
+
+(defn- move-left [zone deck]
+  (keyword (str (case zone "red" "red" "white" "red" "blue" "white") "-" deck)))
+
+(defn- move-right [zone deck]
+   (keyword (str (case zone "red" "white" "white" "blue" "blue" "blue") "-" deck)))
+  
 (defn which-room [where direction]
-  (cond
-   (and (= where :red-up) (= direction :left)) :red-up
-   (and (= where :red-up) (= direction :right)) :white-up
-   (and (= where :white-up) (= direction :left)) :red-up
-   (and (= where :white-up) (= direction :right)) :blue-up
-   (and (= where :blue-up) (= direction :left)) :white-up
-   (and (= where :blue-up) (= direction :right)) :blue-up))
+  (let [[zone deck] (.split (name where) "-")]
+    (cond
+     (= direction :left) (move-left zone deck)
+     (= direction :right) (move-right zone deck)
+     (= direction :updown) (move-grav-lift zone deck)
+     true (throw (str "Bad direction " direction)))))
 
 (defn move-player [ship player direction]
   (let [ship-rooms (:rooms ship)
 	position (find-player ship player)
-	removed-rooms (reduce (fn [m room] (assoc m room (remove #{player} (get ship-rooms room)))) {} *order*)
+	removed-rooms (reduce (fn [m room] (assoc m room (remove #{player} (get ship-rooms room)))) {} *rooms*)
 	destination-room (which-room position direction)
 	destination-contents (destination-room ship)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
@@ -56,7 +64,12 @@
 (deftest room-movements
   (is (= :red-up (which-room :red-up :left)))
   (is (= :red-up (which-room :white-up :left)))
+  (is (= :red-down (which-room :white-down :left)))
   (is (= :white-up (which-room :blue-up :left)))
   (is (= :white-up (which-room :red-up :right)))
   (is (= :blue-up (which-room :white-up :right)))
-  (is (= :blue-up (which-room :blue-up :right))))
+  (is (= :blue-up (which-room :blue-up :right)))
+  (is (= :blue-down (which-room :white-down :right)))
+  (is (= :red-down (which-room :red-up :updown)))
+  (is (= :white-up (which-room :white-down :updown)))
+  (is (= :blue-up (which-room :blue-down :updown))))
