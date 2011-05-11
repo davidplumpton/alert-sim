@@ -79,7 +79,7 @@
   (is (= :blue-up (which-room :blue-down :updown))))
 
 (deftest threats
-  (let [ship (create-initial-ship 4)]
+  (let [ship (create-initial-ship 4)
+	ship-with-threat (add-threat ship 5 :fighter)]
     (is (= 0 (count (:threats ship))))
-    (let [ship-with-threat (add-threat ship 5 :fighter)]
-      (is (= [5 :fighter] (first (:threats ship-with-threat)))))))
+    (is (= [5 :fighter] (first (:threats ship-with-threat))))))
