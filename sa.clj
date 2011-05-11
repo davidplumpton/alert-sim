@@ -42,7 +42,7 @@
 (defn move-player [ship player direction]
   (let [ship-rooms (:rooms ship)
 	position (find-player ship player)
-	removed-rooms (reduce (fn [m room] (assoc m room (remove #{player} (get ship-rooms room)))) {} *rooms*)
+	removed-rooms (reduce conj {} (for [[k v] ship-rooms] [k (remove #{player} v)]))
 	destination-room (which-room position direction)
 	destination-contents (destination-room ship)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
