@@ -46,7 +46,7 @@
 	destination-room (which-room position direction)
 	destination-contents (destination-room ship)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
-    (Ship. updated-rooms (:threats ship))))
+    (assoc ship :rooms updated-rooms)))
 
 (defn add-threat [ship time new-threat]
   (assoc-in ship [:threats time] new-threat))
