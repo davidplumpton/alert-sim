@@ -5,7 +5,7 @@
   [:refer-clojure]
   [:use clojure.test])
 
-(defrecord Ship [rooms])
+(defrecord Ship [rooms threats])
 
 (def *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
@@ -13,7 +13,8 @@
   (Ship.
    (assoc
        (reduce (fn [m r] (assoc m r [])) {} *rooms*)
-     :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))))
+     :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
+   {}))
 
 (defn find-player [ship player]
   (first (first
@@ -45,7 +46,10 @@
 	destination-room (which-room position direction)
 	destination-contents (destination-room ship)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
-    (Ship. updated-rooms)))
+    (Ship. updated-rooms (:threats ship))))
+
+(defn add-threat [ship time new-threat]
+  (assoc-in ship [:threats time] new-threat))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -73,3 +77,9 @@
   (is (= :red-down (which-room :red-up :updown)))
   (is (= :white-up (which-room :white-down :updown)))
   (is (= :blue-up (which-room :blue-down :updown))))
+
+(deftest threats
+  (let [ship (create-initial-ship 4)]
+    (is (= 0 (count (:threats ship))))
+    (let [ship-with-threat (add-threat ship 5 :fighter)]
+      (is (= [5 :fighter] (first (:threats ship-with-threat)))))))
