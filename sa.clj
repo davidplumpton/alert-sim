@@ -48,8 +48,14 @@
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc ship :rooms updated-rooms)))
 
-(defn add-threat [ship time new-threat]
+(defn add-threat [ship time zone new-threat]
   (assoc-in ship [:threats time] new-threat))
+
+(defn add-turn [turns step player turn]
+  (assoc-in turns [step player] turn))
+
+(defn get-turn [turns step player]
+  (get (get turns step) player))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -80,6 +86,17 @@
 
 (deftest threats
   (let [ship (create-initial-ship 4)
-	ship-with-threat (add-threat ship 5 :fighter)]
+	ship-with-threat (add-threat ship 5 :red :fighter)]
     (is (= 0 (count (:threats ship))))
     (is (= [5 :fighter] (first (:threats ship-with-threat))))))
+
+(deftest play-one-turn
+  (let [ship (create-initial-ship 4)
+	turns (reduce
+	       (fn [m [step player turn]] (add-turn m step player turn))
+	       {} [[1 :player1 :left] [1 :player2 :right] [2 :player1 :updown] [2 :player3 :left] [3 :player1 :right]])]
+    (is (= :left (get-turn turns 1 :player1)))
+    (is (= :right (get-turn turns 1 :player2)))
+    (is (= :updown (get-turn turns 2 :player1)))
+    (is (= :right (get-turn turns 3 :player1)))))
+
