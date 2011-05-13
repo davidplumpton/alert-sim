@@ -17,10 +17,9 @@
    {}))
 
 (defn find-player [ship player]
-  (first (first
-	  (filter
+  (ffirst (filter
 	   (fn [[room contents]] (some #{player} contents))
-	   (:rooms ship)))))
+	   (:rooms ship))))
 
 (defn- move-grav-lift [zone deck]
   (keyword (str zone "-" (if (= deck "up") "down" "up"))))
@@ -55,7 +54,7 @@
   (assoc-in turns [step player] turn))
 
 (defn get-turn [turns step player]
-  (get (get turns step) player))
+  (get-in turns [step player]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
