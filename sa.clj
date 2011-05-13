@@ -12,7 +12,7 @@
 (defn create-initial-ship [num-players]
   (Ship.
    (assoc
-       (reduce (fn [m r] (assoc m r [])) {} *rooms*)
+       (apply assoc {} (interleave *rooms* (repeat [])))
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
    {}))
 
@@ -41,7 +41,7 @@
 (defn move-player [ship player direction]
   (let [ship-rooms (:rooms ship)
 	position (find-player ship player)
-	removed-rooms (reduce conj {} (for [[k v] ship-rooms] [k (remove #{player} v)]))
+	removed-rooms (update-in ship-rooms [position] #(remove #{player} %))
 	destination-room (which-room position direction)
 	destination-contents (destination-room ship)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
