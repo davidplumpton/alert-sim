@@ -53,8 +53,22 @@
 (defn add-turn [turns step player turn]
   (assoc-in turns [step player] turn))
 
-(defn get-turn [turns step player]
-  (get-in turns [step player]))
+(defn turn-player [turn]
+  (first turn))
+
+(defn turn-direction [turn]
+  (second turn))
+
+(defn get-turn
+  ([turns step]
+     (get turns step))
+  ([turns step player]
+     (get-in turns [step player])))
+
+(defn play-step [ship turns step]
+  (reduce
+   (fn [ship turn] (move-player ship (turn-player turn) (turn-direction turn)))
+   ship (get-turn turns step)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -62,7 +76,7 @@
   (let [ship (create-initial-ship 4)]
     (is (= :white-up (find-player ship :player1)))
     (is (= :white-up (find-player ship :player4)))
-    (is (not (= :white-up (find-player ship :player5))))))
+    (is (not= :white-up (find-player ship :player5)))))
 
 (deftest player-move
   (let [ship (create-initial-ship 4)
@@ -89,13 +103,23 @@
     (is (= 0 (count (:threats ship))))
     (is (= [5 :fighter] (first (:threats ship-with-threat))))))
 
-(deftest play-one-turn
+(defn- create-sample-turns []
+  (reduce
+   (fn [m [step player turn]] (add-turn m step player turn))
+   {} [[1 :player1 :left] [1 :player2 :right] [2 :player1 :updown] [2 :player3 :left] [3 :player1 :right]]))
+
+(deftest add-turn-should-work-for-multiple-steps
   (let [ship (create-initial-ship 4)
-	turns (reduce
-	       (fn [m [step player turn]] (add-turn m step player turn))
-	       {} [[1 :player1 :left] [1 :player2 :right] [2 :player1 :updown] [2 :player3 :left] [3 :player1 :right]])]
+	turns (create-sample-turns)]
     (is (= :left (get-turn turns 1 :player1)))
     (is (= :right (get-turn turns 1 :player2)))
     (is (= :updown (get-turn turns 2 :player1)))
     (is (= :right (get-turn turns 3 :player1)))))
 
+(deftest play-step-should-work
+  (let [ship (create-initial-ship 4)
+	turns (create-sample-turns)
+	ship-after-step-1 (play-step ship turns 1)]
+    (is (= :red-up (find-player ship-after-step-1 :player1)))
+    (is (= :blue-up (find-player ship-after-step-1 :player2)))
+    (is (= :white-up (find-player ship-after-step-1 :player3)))))
