@@ -16,21 +16,31 @@
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
    {}))
 
-(defn find-player [ship player]
+(defn find-player
+  "Find the room a player is in"
+  [ship player]
   (ffirst (filter
 	   (fn [[room contents]] (some #{player} contents))
 	   (:rooms ship))))
 
-(defn- move-grav-lift [zone deck]
+(defn- move-grav-lift
+  "Determine which room the grav-lift leads to"
+  [zone deck]
   (keyword (str zone "-" (if (= deck "up") "down" "up"))))
 
-(defn- move-left [zone deck]
+(defn- move-left
+  "Determine which room is left of here"
+  [zone deck]
   (keyword (str (case zone "red" "red" "white" "red" "blue" "white") "-" deck)))
 
-(defn- move-right [zone deck]
-   (keyword (str (case zone "red" "white" "white" "blue" "blue" "blue") "-" deck)))
+(defn- move-right
+  "Determine which room is right here"
+  [zone deck]
+  (keyword (str (case zone "red" "white" "white" "blue" "blue" "blue") "-" deck)))
   
-(defn which-room [where direction]
+(defn which-room
+  "Determine which room is the destination give a room and a direction"
+  [where direction]
   (let [[zone deck] (.split (name where) "-")]
     (cond
      (= direction :left) (move-left zone deck)
@@ -38,7 +48,9 @@
      (= direction :updown) (move-grav-lift zone deck)
      true (throw (str "Bad direction " direction)))))
 
-(defn move-player [ship player direction]
+(defn move-player
+  "Update the ship to move a player in some direction"
+  [ship player direction]
   (let [ship-rooms (:rooms ship)
 	position (find-player ship player)
 	removed-rooms (update-in ship-rooms [position] #(remove #{player} %))
@@ -47,25 +59,36 @@
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc ship :rooms updated-rooms)))
 
-(defn add-threat [ship time zone new-threat]
-  (assoc-in ship [:threats time] new-threat))
+(defn add-threat
+  "Add a new threat at some time and zone"
+  [ship step zone new-threat]
+  (assoc-in ship [:threats step] new-threat))
 
-(defn add-turn [turns step player turn]
+(defn add-turn
+  "Add a turn for a player"
+  [turns step player turn]
   (assoc-in turns [step player] turn))
 
-(defn turn-player [turn]
+(defn turn-player
+  "Given a turn find the player"
+  [turn]
   (first turn))
 
-(defn turn-direction [turn]
+(defn turn-direction
+  "Given a turn find the direction"
+  [turn]
   (second turn))
 
 (defn get-turn
+  "Find a specific turn or turns at a certain step"
   ([turns step]
      (get turns step))
   ([turns step player]
      (get-in turns [step player])))
 
-(defn play-step [ship turns step]
+(defn play-step
+  "Play all the turns at a certain step"
+  [ship turns step]
   (reduce
    (fn [ship turn] (move-player ship (turn-player turn) (turn-direction turn)))
    ship (get-turn turns step)))
