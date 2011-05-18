@@ -1,0 +1,7 @@
+Alert Sim is a simulator for the boardgame "Space Alert", written in Clojure.
+It's a fun programming exercise in Clojure to see if I can get a computer
+program to find some strategies and tactics for playing Space Alert.
+
+If you are unfamiliar with Space Alert it's a great board game from
+Czech Games, and I highly recommend it.
+
