@@ -93,6 +93,25 @@
    (fn [ship turn] (move-player ship (turn-player turn) (turn-direction turn)))
    ship (get-turn turns step)))
 
+(defn- pp-rooms [ship rooms]
+  (apply str (for [room rooms]
+	       (let [player-str (apply str (for [player (room (:rooms ship))] (.substring (name player) 6)))
+		     room-str (str player-str (.substring "      " (count player-str)))]
+		     (str "| " room-str)))))
+  
+(def divider (str (apply str (take 3 (repeat "+-------"))) "+"))
+
+(defn pp
+  "Pretty print ship"
+  [ship]
+  (print
+   (str
+    divider "\n"
+    (pp-rooms ship [:red-up :white-up :blue-up]) "|"
+    "\n" divider "\n"
+    (pp-rooms ship [:red-down :white-down :blue-down]) "|"
+    "\n" divider "\n")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest ship-structure
