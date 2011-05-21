@@ -106,6 +106,7 @@
   [ship]
   (print
    (str
+    "   red    white   blue\n"
     divider "\n"
     (pp-rooms ship [:red-up :white-up :blue-up]) "|"
     "\n" divider "\n"
