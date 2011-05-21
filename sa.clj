@@ -59,6 +59,21 @@
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc ship :rooms updated-rooms)))
 
+(defn create-threat [number type zone range]
+  {:number number :type type :zone zone :range range})
+
+(defn threat-number [threat]
+  (:number threat))
+
+(defn threat-type [threat]
+  (:type threat))
+
+(defn threat-zone [threat]
+  (:zone threat))
+
+(defn threat-range [threat]
+  (:range threat))
+
 (defn add-threat
   "Add a new threat at some time and zone"
   [ship step zone new-threat]
@@ -143,9 +158,14 @@
 
 (deftest threats
   (let [ship (create-initial-ship 4)
-	ship-with-threat (add-threat ship 5 :red :fighter)]
+	ship-with-threat (add-threat ship 5 :red :fighter)
+	threat (create-threat 3 :energy-cloud :blue 8)]
     (is (= 0 (count (:threats ship))))
-    (is (= [5 :fighter] (first (:threats ship-with-threat))))))
+    (is (= [5 :fighter] (first (:threats ship-with-threat))))
+    (is (= 3 (threat-number threat)))
+    (is (= :blue (threat-zone threat)))
+    (is (= 8 (threat-range threat)))
+    (is (= :energy-cloud (threat-type threat)))))
 
 (defn- create-sample-turns []
   (reduce
