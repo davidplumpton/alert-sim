@@ -9,6 +9,16 @@
 
 (def *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
+(def *trajectories* [
+     [:z :_ :_ :_ :x, :_ :_ :_ :_ :_]
+     [:z :_ :_ :_ :_, :_ :_ :x :_ :_, :_]
+     [:z :_ :y :_ :_, :_ :_ :x :_ :_, :_ :_]
+     [:z :_ :_ :_ :y, :_ :_ :_ :x :_, :_ :_ :_]
+     [:z :_ :_ :_ :_, :_ :y :_ :_ :_, :x :_ :_ :_]
+     [:z :_ :y :_ :_, :_ :y :_ :_ :x, :_ :_ :_ :_ :_]
+     [:z :_ :_ :_ :y, :_ :_ :y :_ :_, :_ :x :_ :_ :_ :_]
+])
+
 (defn create-initial-ship [num-players]
   (Ship.
    (assoc
