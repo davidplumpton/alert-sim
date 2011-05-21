@@ -55,7 +55,7 @@
 	position (find-player ship player)
 	removed-rooms (update-in ship-rooms [position] #(remove #{player} %))
 	destination-room (which-room position direction)
-	destination-contents (destination-room ship)
+	destination-contents (destination-room removed-rooms)
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc ship :rooms updated-rooms)))
 
@@ -125,7 +125,8 @@
   (let [ship (create-initial-ship 4)
 	ship-with-player2-left (move-player ship :player2 :left)]
     (is (= :red-up (find-player ship-with-player2-left :player2)))
-    (is (= :white-up (find-player ship-with-player2-left :player3)))))
+    (is (= :white-up (find-player ship-with-player2-left :player3)))
+    (is (= :white-up (find-player (move-player ship-with-player2-left :player2 :right) :player3)))))
 
 (deftest room-movements
   (is (= :red-up (which-room :red-up :left)))
