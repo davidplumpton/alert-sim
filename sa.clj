@@ -5,10 +5,11 @@
   [:refer-clojure]
   [:use clojure.test])
 
-(defrecord Ship [rooms threats])
+(defrecord Ship [rooms threats trajectories])
 
 (def *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
+;; Commas indicate range boundaries
 (def *trajectories* [
      [:z :_ :_ :_ :x, :_ :_ :_ :_ :_]
      [:z :_ :_ :_ :_, :_ :_ :x :_ :_, :_]
@@ -16,15 +17,19 @@
      [:z :_ :_ :_ :y, :_ :_ :_ :x :_, :_ :_ :_]
      [:z :_ :_ :_ :_, :_ :y :_ :_ :_, :x :_ :_ :_]
      [:z :_ :y :_ :_, :_ :y :_ :_ :x, :_ :_ :_ :_ :_]
-     [:z :_ :_ :_ :y, :_ :_ :y :_ :_, :_ :x :_ :_ :_ :_]
-])
+     [:z :_ :_ :_ :y, :_ :_ :y :_ :_, :_ :x :_ :_ :_ :_]])
 
-(defn create-initial-ship [num-players]
+(defn create-initial-ship
+  "Create the starting position, specifying the number of players"
+  ([num-players]
+     (create-initial-ship num-players *trajectories*))
+  ([num-players trajectories]
   (Ship.
    (assoc
        (apply assoc {} (interleave *rooms* (repeat [])))
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
-   {}))
+   {}
+   (apply assoc {} (interleave [:red :white :blue :internal] trajectories)))))
 
 (defn find-player
   "Find the room a player is in"
