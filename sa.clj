@@ -7,10 +7,10 @@
 
 (defrecord Ship [rooms threats trajectories])
 
-(def *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
+(def rooms [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
 ;; Commas indicate range boundaries
-(def *trajectories* [
+(def trajectories [
      [:z :_ :_ :_ :x, :_ :_ :_ :_ :_]
      [:z :_ :_ :_ :_, :_ :_ :x :_ :_, :_]
      [:z :_ :y :_ :_, :_ :_ :x :_ :_, :_ :_]
@@ -22,11 +22,11 @@
 (defn create-initial-ship
   "Create the starting position, specifying the number of players"
   ([num-players]
-     (create-initial-ship num-players *trajectories*))
+     (create-initial-ship num-players trajectories))
   ([num-players trajectories]
   (Ship.
    (assoc
-       (apply assoc {} (interleave *rooms* (repeat [])))
+       (apply assoc {} (interleave rooms (repeat [])))
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
    {}
    (apply assoc {} (interleave [:red :white :blue :internal] trajectories)))))
@@ -128,20 +128,35 @@
 	       (let [player-str (apply str (for [player (room (:rooms ship))] (.substring (name player) 6)))
 		     room-str (str player-str (.substring "      " (count player-str)))]
 		     (str "| " room-str)))))
-  
-(def divider (str (apply str (take 3 (repeat "+-------"))) "+"))
+
+(defn- pp-external-trajectories [ship]
+  (let [traj-red (get-in ship [:trajectories :red])
+	traj-white (get-in ship [:trajectories :white])
+	traj-blue (get-in ship [:trajectories :blue])]
+  ))
+
+(defn- pp-internal-trajectory [ship]
+  (apply str (map #(cond
+		    (= :x %) "X "
+		    (= :y %) "Y "
+		    (= :z %) "Z "
+		    (= :_ %) "- ") (reverse (get-in ship [:trajectories :internal])))))
+
+(def divider (str (apply str (take 3 (repeat "+-------"))) "+\n"))
 
 (defn pp
   "Pretty print ship"
   [ship]
   (print
    (str
+    (pp-external-trajectories ship)
     "   red    white   blue\n"
-    divider "\n"
-    (pp-rooms ship [:red-up :white-up :blue-up]) "|"
-    "\n" divider "\n"
-    (pp-rooms ship [:red-down :white-down :blue-down]) "|"
-    "\n" divider "\n")))
+    divider
+    (pp-rooms ship [:red-up :white-up :blue-up]) "|\n"
+    divider
+    (pp-rooms ship [:red-down :white-down :blue-down]) "|\n"
+    divider
+    (pp-internal-trajectory ship))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -202,3 +217,7 @@
     (is (= :red-up (find-player ship-after-step-1 :player1)))
     (is (= :blue-up (find-player ship-after-step-1 :player2)))
     (is (= :white-up (find-player ship-after-step-1 :player3)))))
+
+(deftest trajectories-should-default
+  (let [ship (create-initial-ship 4)]
+    (is (= (nth trajectories 0) (get-in ship [:trajectories :red])))))
