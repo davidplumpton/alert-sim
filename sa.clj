@@ -129,18 +129,36 @@
 		     room-str (str player-str (.substring "      " (count player-str)))]
 		     (str "| " room-str)))))
 
-(defn- pp-external-trajectories [ship]
-  (let [traj-red (get-in ship [:trajectories :red])
-	traj-white (get-in ship [:trajectories :white])
-	traj-blue (get-in ship [:trajectories :blue])]
-  ))
+(defn- trajectory-element-str
+  ([trajectory index length]
+     (trajectory-element-str trajectory (+ index (- (count trajectory) length))))
+  ([trajectory index]
+     (let [elem (nth trajectory index " ")]
+       (case elem
+             :x "X"
+             :y "Y"
+             :z "Z"
+             :_ "-"
+             " "))))
 
-(defn- pp-internal-trajectory [ship]
-  (apply str (map #(cond
-		    (= :x %) "X "
-		    (= :y %) "Y "
-		    (= :z %) "Z "
-		    (= :_ %) "- ") (reverse (get-in ship [:trajectories :internal])))))
+(defn- pp-external-trajectories
+  "Format a string representing the external trajectories"
+  [ship]
+  (let [[red white blue] (map #(get-in ship [:trajectories %]) [:red :white :blue])
+        length (max (count red) (count white) (count blue))
+        gap "        "]
+    (apply str
+           (for [i (range length)] (str (trajectory-element-str red i length) gap
+                                        (trajectory-element-str white i length) gap
+                                        (trajectory-element-str blue i length) "\n")))))
+
+(defn- pp-internal-trajectory
+  "Format a string representing the internal trajectory"
+  [ship]
+  (let [internal (get-in ship [:trajectories :internal])]
+    (apply str (interleave
+                (for [i (range (dec (count internal)) -1 -1)] (trajectory-element-str internal i))
+                (repeat " ")))))
 
 (def divider (str (apply str (take 3 (repeat "+-------"))) "+\n"))
 
