@@ -130,16 +130,9 @@
 		     (str "| " room-str)))))
 
 (defn- trajectory-element-str
-  ([trajectory index length]
-     (trajectory-element-str trajectory (+ index (- (count trajectory) length))))
-  ([trajectory index]
-     (let [elem (nth trajectory index " ")]
-       (case elem
-             :x "X"
-             :y "Y"
-             :z "Z"
-             :_ "-"
-             " "))))
+  [trajectory index length]
+    (let [elem (nth trajectory index " ")]
+      (case elem :x "X" :y "Y" :z "Z" :_ "-" " ")))
 
 (defn- pp-external-trajectories
   "Format a string representing the external trajectories"
@@ -148,7 +141,7 @@
         length (max (count red) (count white) (count blue))
         gap "        "]
     (apply str
-           (for [i (range length)] (str (trajectory-element-str red i length) gap
+           (for [i (reverse (range length))] (str (trajectory-element-str red i length) gap
                                         (trajectory-element-str white i length) gap
                                         (trajectory-element-str blue i length) "\n")))))
 
@@ -157,7 +150,7 @@
   [ship]
   (let [internal (get-in ship [:trajectories :internal])]
     (apply str (interleave
-                (for [i (range (dec (count internal)) -1 -1)] (trajectory-element-str internal i))
+                (for [i (range (dec (count internal)) -1 -1)] (trajectory-element-str internal i (count internal)))
                 (repeat " ")))))
 
 (def divider (str (apply str (take 3 (repeat "+-------"))) "+\n"))
