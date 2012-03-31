@@ -1,5 +1,5 @@
 ;;; Simulator for the board game "Space Alert"
-;;; David Plumpton 2011
+;;; David Plumpton 2011-2012
 
 (ns sa
   [:refer-clojure]
@@ -28,7 +28,7 @@
    (assoc
        (apply assoc {} (interleave rooms (repeat [])))
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
-   {}
+   []
    (apply assoc {} (interleave [:red :white :blue :internal] trajectories)))))
 
 (defn find-player
@@ -74,25 +74,13 @@
 	updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc ship :rooms updated-rooms)))
 
-(defn create-threat [number type zone range]
-  {:number number :type type :zone zone :range range})
-
-(defn threat-number [threat]
-  (:number threat))
-
-(defn threat-type [threat]
-  (:type threat))
-
-(defn threat-zone [threat]
-  (:zone threat))
-
-(defn threat-range [threat]
-  (:range threat))
+(defn create-threat [number type zone distance id]
+  {:number number :type type :zone zone :distance distance :id id})
 
 (defn add-threat
   "Add a new threat at some time and zone"
-  [ship step zone new-threat]
-  (assoc-in ship [:threats step] new-threat))
+  [ship new-threat]
+  (assoc ship :threats (conj (:threats ship) new-threat)))
 
 (defn add-turn
   "Add a turn for a player"
@@ -199,14 +187,17 @@
 
 (deftest threats
   (let [ship (create-initial-ship 4)
-	ship-with-threat (add-threat ship 5 :red :fighter)
-	threat (create-threat 3 :energy-cloud :blue 8)]
+	threat1 (create-threat 3 :energy-cloud :blue 8 :e1-04)
+	threat2 (create-threat 5 :fighter :red 9 :e1-07)
+	threats [threat1 threat2]
+	ship-with-threats (reduce add-threat ship threats)]
     (is (= 0 (count (:threats ship))))
-    (is (= [5 :fighter] (first (:threats ship-with-threat))))
-    (is (= 3 (threat-number threat)))
-    (is (= :blue (threat-zone threat)))
-    (is (= 8 (threat-range threat)))
-    (is (= :energy-cloud (threat-type threat)))))
+    (is (= 2 (count (:threats ship-with-threats))))
+    (is (= :energy-cloud (:type (first (:threats ship-with-threats)))))
+    (is (= 3 (:number threat1)))
+    (is (= :blue (:zone threat1)))
+    (is (= 9 (:distance threat2)))
+    (is (= :fighter (:type threat2)))))
 
 (defn- create-sample-turns []
   (reduce
