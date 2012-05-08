@@ -5,7 +5,7 @@
   [:refer-clojure]
   [:use clojure.test])
 
-(defrecord Ship [rooms threats trajectories])
+(defrecord Board [rooms threats trajectories])
 
 (def rooms [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
@@ -32,12 +32,12 @@
    :e1-10 [:meteroid 5 0 5 [] [] [:attack-hit-points] :no-rockets]
    :se1-01 [:frigate 7 2 2 4 8 [:attack 2] [:attack 3] [:attack 4]]})
 
-(defn create-initial-ship
+(defn create-initial-board
   "Create the starting position, specifying the number of players"
   ([num-players]
-     (create-initial-ship num-players trajectories))
+     (create-initial-board num-players trajectories))
   ([num-players trajectories]
-  (Ship.
+  (Board.
    (assoc
        (apply assoc {} (interleave rooms (repeat [])))
      :white-up (vec (map (fn [num] (keyword (str "player" num))) (range 1 (inc num-players)))))
@@ -46,10 +46,10 @@
 
 (defn find-player
   "Find the room a player is in"
-  [ship player]
+  [board player]
   (ffirst (filter
            (fn [[room contents]] (some #{player} contents))
-           (:rooms ship))))
+           (:rooms board))))
 
 (defn- move-grav-lift
   "Determine which room the grav-lift leads to"
@@ -77,23 +77,23 @@
      true (throw (str "Bad direction " direction)))))
 
 (defn move-player
-  "Update the ship to move a player in some direction"
-  [ship player direction]
-  (let [ship-rooms (:rooms ship)
-        position (find-player ship player)
-        removed-rooms (update-in ship-rooms [position] #(remove #{player} %))
+  "Update the board to move a player in some direction"
+  [board player direction]
+  (let [board-rooms (:rooms board)
+        position (find-player board player)
+        removed-rooms (update-in board-rooms [position] #(remove #{player} %))
         destination-room (which-room position direction)
         destination-contents (destination-room removed-rooms)
         updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
-    (assoc ship :rooms updated-rooms)))
+    (assoc board :rooms updated-rooms)))
 
 (defn create-threat [number type zone distance id]
   {:number number :type type :zone zone :distance distance :id id})
 
 (defn add-threat
   "Add a new threat at some time and zone"
-  [ship new-threat]
-  (assoc ship :threats (conj (:threats ship) new-threat)))
+  [board new-threat]
+  (assoc board :threats (conj (:threats board) new-threat)))
 
 (defn add-turn
   "Add a turn for a player"
@@ -119,20 +119,20 @@
 
 (defn player-turn
   "Play all the turns at a certain step"
-  [ship turns step]
+  [board turns step]
   (reduce
-   (fn [ship turn] (move-player ship (turn-player turn) (turn-direction turn)))
-   ship (get-turn turns step)))
+   (fn [board turn] (move-player board (turn-player turn) (turn-direction turn)))
+   board (get-turn turns step)))
 
 (defn threats-move
   "All threats move"
-  [ship]
-    (assoc ship :threats
-      (map (fn [threat] (assoc threat :distance 7)) (:threats ship))))
+  [board]
+    (assoc board :threats
+      (map (fn [threat] (assoc threat :distance 7)) (:threats board))))
 
-(defn- pp-rooms [ship rooms]
+(defn- pp-rooms [board rooms]
   (apply str (for [room rooms]
-               (let [player-str (apply str (for [player (room (:rooms ship))] (.substring (name player) 6)))
+               (let [player-str (apply str (for [player (room (:rooms board))] (.substring (name player) 6)))
                      room-str (str player-str (.substring "      " (count player-str)))]
                      (str "| " room-str)))))
 
@@ -143,8 +143,8 @@
 
 (defn- pp-external-trajectories
   "Format a string representing the external trajectories"
-  [ship]
-  (let [[red white blue] (map #(get-in ship [:trajectories %]) [:red :white :blue])
+  [board]
+  (let [[red white blue] (map #(get-in board [:trajectories %]) [:red :white :blue])
         length (max (count red) (count white) (count blue))
         gap "        "]
     (apply str
@@ -154,8 +154,8 @@
 
 (defn- pp-internal-trajectory
   "Format a string representing the internal trajectory"
-  [ship]
-  (let [internal (get-in ship [:trajectories :internal])]
+  [board]
+  (let [internal (get-in board [:trajectories :internal])]
     (apply str (interleave
                 (for [i (range (dec (count internal)) -1 -1)] (trajectory-element-str internal i (count internal)))
                 (repeat " ")))))
@@ -163,33 +163,33 @@
 (def divider (str (apply str (take 3 (repeat "+-------"))) "+\n"))
 
 (defn pp
-  "Pretty print ship"
-  [ship]
+  "Pretty print board"
+  [board]
   (print
    (str
-    (pp-external-trajectories ship)
+    (pp-external-trajectories board)
     "   red    white   blue\n"
     divider
-    (pp-rooms ship [:red-up :white-up :blue-up]) "|\n"
+    (pp-rooms board [:red-up :white-up :blue-up]) "|\n"
     divider
-    (pp-rooms ship [:red-down :white-down :blue-down]) "|\n"
+    (pp-rooms board [:red-down :white-down :blue-down]) "|\n"
     divider
-    (pp-internal-trajectory ship) "\n")))
+    (pp-internal-trajectory board) "\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest ship-structure
-  (let [ship (create-initial-ship 4)]
-    (is (= :white-up (find-player ship :player1)))
-    (is (= :white-up (find-player ship :player4)))
-    (is (not= :white-up (find-player ship :player5)))))
+(deftest board-structure
+  (let [board (create-initial-board 4)]
+    (is (= :white-up (find-player board :player1)))
+    (is (= :white-up (find-player board :player4)))
+    (is (not= :white-up (find-player board :player5)))))
 
 (deftest player-move
-  (let [ship (create-initial-ship 4)
-        ship-with-player2-left (move-player ship :player2 :left)]
-    (is (= :red-up (find-player ship-with-player2-left :player2)))
-    (is (= :white-up (find-player ship-with-player2-left :player3)))
-    (is (= :white-up (find-player (move-player ship-with-player2-left :player2 :right) :player3)))))
+  (let [board (create-initial-board 4)
+        board-with-player2-left (move-player board :player2 :left)]
+    (is (= :red-up (find-player board-with-player2-left :player2)))
+    (is (= :white-up (find-player board-with-player2-left :player3)))
+    (is (= :white-up (find-player (move-player board-with-player2-left :player2 :right) :player3)))))
 
 (deftest room-movements
   (is (= :red-up (which-room :red-up :left)))
@@ -205,14 +205,14 @@
   (is (= :blue-up (which-room :blue-down :updown))))
 
 (deftest threats
-  (let [ship (create-initial-ship 4)
+  (let [board (create-initial-board 4)
         threat1 (create-threat 3 :energy-cloud :blue 8 :e1-04)
         threat2 (create-threat 5 :fighter :red 9 :e1-07)
         threats [threat1 threat2]
-        ship-with-threats (reduce add-threat ship threats)]
-    (is (= 0 (count (:threats ship))))
-    (is (= 2 (count (:threats ship-with-threats))))
-    (is (= :energy-cloud (:type (first (:threats ship-with-threats)))))
+        board-with-threats (reduce add-threat board threats)]
+    (is (= 0 (count (:threats board))))
+    (is (= 2 (count (:threats board-with-threats))))
+    (is (= :energy-cloud (:type (first (:threats board-with-threats)))))
     (is (= 3 (:number threat1)))
     (is (= :blue (:zone threat1)))
     (is (= 9 (:distance threat2)))
@@ -224,7 +224,7 @@
    {} [[1 :player1 :left] [1 :player2 :right] [2 :player1 :updown] [2 :player3 :left] [3 :player1 :right]]))
 
 (deftest add-turn-should-work-for-multiple-steps
-  (let [ship (create-initial-ship 4)
+  (let [board (create-initial-board 4)
         turns (create-sample-turns)]
     (is (= :left (get-turn turns 1 :player1)))
     (is (= :right (get-turn turns 1 :player2)))
@@ -232,21 +232,21 @@
     (is (= :right (get-turn turns 3 :player1)))))
 
 (deftest player-turn-should-work
-  (let [ship (create-initial-ship 4)
+  (let [board (create-initial-board 4)
         turns (create-sample-turns)
-        ship-after-step-1 (player-turn ship turns 1)]
-    (is (= :red-up (find-player ship-after-step-1 :player1)))
-    (is (= :blue-up (find-player ship-after-step-1 :player2)))
-    (is (= :white-up (find-player ship-after-step-1 :player3)))))
+        board-after-step-1 (player-turn board turns 1)]
+    (is (= :red-up (find-player board-after-step-1 :player1)))
+    (is (= :blue-up (find-player board-after-step-1 :player2)))
+    (is (= :white-up (find-player board-after-step-1 :player3)))))
 
 (deftest trajectories-should-default
-  (let [ship (create-initial-ship 4)]
-    (is (= (nth trajectories 0) (get-in ship [:trajectories :red])))))
+  (let [board (create-initial-board 4)]
+    (is (= (nth trajectories 0) (get-in board [:trajectories :red])))))
 
 (deftest threats-should-move
-  (let [ship (create-initial-ship 4)
+  (let [board (create-initial-board 4)
         threat (create-threat 1 :fighter :red 10 :e1-07)
-        ship-with-threat (add-threat ship threat)
-        updated (threats-move ship-with-threat)]
+        board-with-threat (add-threat board threat)
+        updated (threats-move board-with-threat)]
     (is (= 10 (:distance threat)))
     (is (= 7 (:distance (first (:threats updated)))))))
