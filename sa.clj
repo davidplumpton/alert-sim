@@ -87,8 +87,8 @@
         updated-rooms (assoc removed-rooms destination-room (conj destination-contents player))]
     (assoc board :rooms updated-rooms)))
 
-(defn create-threat [number type zone distance id]
-  {:number number :type type :zone zone :distance distance :id id})
+(defn create-threat [number type zone distance id speed]
+  {:number number :type type :zone zone :distance distance :id id :speed speed})
 
 (defn add-threat
   "Add a new threat at some time and zone"
@@ -124,11 +124,14 @@
    (fn [board turn] (move-player board (turn-player turn) (turn-direction turn)))
    board (get-turn turns step)))
 
+(defn- move-one-threat
+  [threat]
+  (assoc threat :distance (- (:distance threat) (:speed threat))))
+
 (defn threats-move
   "All threats move"
   [board]
-    (assoc board :threats
-      (map (fn [threat] (assoc threat :distance 7)) (:threats board))))
+  (assoc board :threats (map move-one-threat (:threats board))))
 
 (defn- pp-rooms [board rooms]
   (apply str (for [room rooms]
@@ -206,8 +209,8 @@
 
 (deftest threats
   (let [board (create-initial-board 4)
-        threat1 (create-threat 3 :energy-cloud :blue 8 :e1-04)
-        threat2 (create-threat 5 :fighter :red 9 :e1-07)
+        threat1 (create-threat 3 :energy-cloud :blue 8 :e1-04 2)
+        threat2 (create-threat 5 :fighter :red 9 :e1-07 3)
         threats [threat1 threat2]
         board-with-threats (reduce add-threat board threats)]
     (is (= 0 (count (:threats board))))
@@ -245,8 +248,11 @@
 
 (deftest threats-should-move
   (let [board (create-initial-board 4)
-        threat (create-threat 1 :fighter :red 10 :e1-07)
-        board-with-threat (add-threat board threat)
-        updated (threats-move board-with-threat)]
-    (is (= 10 (:distance threat)))
-    (is (= 7 (:distance (first (:threats updated)))))))
+        threat1 (create-threat 1 :fighter :red 10 :e1-07 3)
+        threat2 (create-threat 2 :pulse-ball :white 11 :e1-01 2)
+        board-with-threats (add-threat (add-threat board threat1) threat2)
+        updated (threats-move board-with-threats)]
+    (is (= 10 (:distance threat1)))
+    (is (= 11 (:distance threat2)))
+    (is (= 7 (:distance (first (:threats updated)))))
+    (is (= 9 (:distance (second (:threats updated)))))))
