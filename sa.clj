@@ -5,10 +5,10 @@
   [:refer-clojure]
   [:use clojure.test])
 
-(def rooms [:red-up :white-up :blue-up :red-down :white-down :red-down])
+(def ^:dynamic *rooms* [:red-up :white-up :blue-up :red-down :white-down :red-down])
 
 ;; Commas indicate range boundaries
-(def tracks {
+(def ^:dynamic *tracks* {
      :t1 [:z :_ :_ :_ :x, :_ :_ :_ :_ :_]
      :t2 [:z :_ :_ :_ :_, :_ :_ :x :_ :_, :_]
      :t3 [:z :_ :y :_ :_, :_ :_ :x :_ :_, :_ :_]
@@ -17,7 +17,7 @@
      :t6 [:z :_ :y :_ :_, :_ :y :_ :_ :x, :_ :_ :_ :_ :_]
      :t7 [:z :_ :_ :_ :y, :_ :_ :y :_ :_, :_ :x :_ :_ :_ :_]})
 
-(def threats
+(def ^:dynamic *threats*
   {:e1-01 [:pulse-ball 5 1 2 2 4 [:all-zones 1] [:all-zones 1] [:all-zones 2]]
    :e1-02 [:destroyer 5 2 2 2 4 [:attack 1] [:attack 1] [:attack 2] :double-damage]
    :e1-03 [:steath-fighter 4 2 4 2 4 [:reveal] [:attack 2] [:attack 2] :stealth-until-reveal]
@@ -30,7 +30,7 @@
    :e1-10 [:meteroid 5 0 5 [] [] [:attack-hit-points] :no-rockets]
    :se1-01 [:frigate 7 2 2 4 8 [:attack 2] [:attack 3] [:attack 4]]})
 
-(def ship-layout
+(def ^:dynamic *ship-layout*
   {:red-up {:left :red-up :change :red-down :right :white-up}
   :white-up {:left :red-up :change :white-down :right :blue-up}
   :blue-up {:left :white-up :change :blue-down :right :blue-up}
@@ -53,15 +53,15 @@
    :red-reactor {:power 2 :max 3}
    :white-reactor {:power 3 :max 5}
    :blue-reactor {:power 2 :max 3}
-   :red-track (:t1 tracks)
-   :white-track (:t2 tracks)
-   :blue-track (:t3 tracks)
-   :internal-track (:t4 tracks)})
+   :red-track (:t1 *tracks*)
+   :white-track (:t2 *tracks*)
+   :blue-track (:t3 *tracks*)
+   :internal-track (:t4 *tracks*)})
 
 (defn move-to-room
   "Find the room to move to"
   [room direction]
-  (get-in ship-layout [room direction]))
+  (get-in *ship-layout* [room direction]))
 
 (defn player-move
   "Carry out an action by a player"
@@ -81,10 +81,10 @@
   (is (= :white-up (:room (:player4 game4)))))
 
 (deftest create-game-should-have-tracks
-  (is (= (:t1 tracks) (:red-track game4)))
-  (is (= (:t2 tracks) (:white-track game4)))
-  (is (= (:t3 tracks) (:blue-track game4)))
-  (is (= (:t4 tracks) (:internal-track game4))))
+  (is (= (:t1 *tracks*) (:red-track game4)))
+  (is (= (:t2 *tracks*) (:white-track game4)))
+  (is (= (:t3 *tracks*) (:blue-track game4)))
+  (is (= (:t4 *tracks*) (:internal-track game4))))
 
 (deftest create-game-should-have-shields
   (let [rs (:red-shield game4)
