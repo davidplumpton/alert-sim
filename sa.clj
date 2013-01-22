@@ -47,6 +47,9 @@
    :player2 {:room :white-up}
    :player3 {:room :white-up}
    :player4 {:room :white-up}
+   :red-shield {:power 1 :max 2}
+   :white-shield {:power 1 :max 3}
+   :blue-shield {:power 1 :max 2}
    :red-track (:t1 tracks)
    :white-track (:t2 tracks)
    :blue-track (:t3 tracks)
@@ -79,6 +82,18 @@
   (is (= (:t2 tracks) (:white-track game4)))
   (is (= (:t3 tracks) (:blue-track game4)))
   (is (= (:t4 tracks) (:internal-track game4))))
+
+(deftest create-game-should-have-shields
+  (let [rs (:red-shield game4)
+        ws (:white-shield game4)
+        bs (:blue-shield game4)]
+    (are [x y] (= x y)
+      1 (:power rs)
+      1 (:power ws)
+      1 (:power bs)
+      2 (:max rs)
+      3 (:max ws)
+      2 (:max bs))))
 
 (deftest move-to-room-should-return-correct-room
   (is (= :white-up (move-to-room :blue-up :left)))
