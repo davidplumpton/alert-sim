@@ -50,6 +50,9 @@
    :red-shield {:power 1 :max 2}
    :white-shield {:power 1 :max 3}
    :blue-shield {:power 1 :max 2}
+   :red-reactor {:power 2 :max 3}
+   :white-reactor {:power 3 :max 5}
+   :blue-reactor {:power 2 :max 3}
    :red-track (:t1 tracks)
    :white-track (:t2 tracks)
    :blue-track (:t3 tracks)
@@ -94,6 +97,18 @@
       2 (:max rs)
       3 (:max ws)
       2 (:max bs))))
+
+(deftest create-game-should-have-reactors
+  (let [rr (:red-reactor game4)
+        wr (:white-reactor game4)
+        br (:blue-reactor game4)]
+    (are [x y] (= x y)
+      2 (:power rr)
+      3 (:power wr)
+      2 (:power br)
+      3 (:max rr)
+      5 (:max wr)
+      3 (:max br))))
 
 (deftest move-to-room-should-return-correct-room
   (is (= :white-up (move-to-room :blue-up :left)))
