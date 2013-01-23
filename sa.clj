@@ -43,21 +43,21 @@
   [num-players]
   {:num-players num-players
    :round 1
-   :player1 {:room :white-up}
-   :player2 {:room :white-up}
-   :player3 {:room :white-up}
-   :player4 {:room :white-up}
-   :red-shield {:power 1 :max 2}
-   :white-shield {:power 1 :max 3}
-   :blue-shield {:power 1 :max 2}
-   :red-reactor {:power 2 :max 3}
-   :white-reactor {:power 3 :max 5}
-   :blue-reactor {:power 2 :max 3}
+   :player1 {:type :player :room :white-up}
+   :player2 {:type :player :room :white-up}
+   :player3 {:type :player :room :white-up}
+   :player4 {:type :player :room :white-up}
+   :red-shield {:type :shield :power 1 :max 2}
+   :white-shield {:type :shield :power 1 :max 3}
+   :blue-shield {:type :shield :power 1 :max 2}
+   :red-reactor {:type :reactor :power 2 :max 3}
+   :white-reactor {:type :reactor :power 3 :max 5}
+   :blue-reactor {:type :reactor :power 2 :max 3}
    :rods 3
-   :red-track (:t1 *tracks*)
-   :white-track (:t2 *tracks*)
-   :blue-track (:t3 *tracks*)
-   :internal-track (:t4 *tracks*)})
+   :red-track {:type :track :track (:t1 *tracks*)}
+   :white-track {:type :track :track (:t2 *tracks*)}
+   :blue-track {:type :track :track (:t3 *tracks*)}
+   :internal-track {:type :track :track (:t4 *tracks*)}})
 
 (defn move-to-room
   "Find the room to move to"
@@ -82,10 +82,11 @@
   (is (= :white-up (:room (:player4 game4)))))
 
 (deftest create-game-should-have-tracks
-  (is (= (:t1 *tracks*) (:red-track game4)))
-  (is (= (:t2 *tracks*) (:white-track game4)))
-  (is (= (:t3 *tracks*) (:blue-track game4)))
-  (is (= (:t4 *tracks*) (:internal-track game4))))
+  (are [x y] (= x y)
+    (:t1 *tracks*) (:track (:red-track game4))
+    (:t2 *tracks*) (:track (:white-track game4))
+    (:t3 *tracks*) (:track (:blue-track game4))
+    (:t4 *tracks*) (:track (:internal-track game4))))
 
 (deftest create-game-should-have-shields
   (let [rs (:red-shield game4)
