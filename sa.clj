@@ -53,6 +53,7 @@
    :red-reactor {:power 2 :max 3}
    :white-reactor {:power 3 :max 5}
    :blue-reactor {:power 2 :max 3}
+   :rods 3
    :red-track (:t1 *tracks*)
    :white-track (:t2 *tracks*)
    :blue-track (:t3 *tracks*)
@@ -109,6 +110,10 @@
       3 (:max rr)
       5 (:max wr)
       3 (:max br))))
+
+(deftest create-game-should-have-rods
+  (are [x y] (= x y)
+    3 (:rods game4)))
 
 (deftest move-to-room-should-return-correct-room
   (is (= :white-up (move-to-room :blue-up :left)))
