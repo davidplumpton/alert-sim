@@ -41,8 +41,8 @@
 (defn create-game
   "Create the starting position, specifying the number of players"
   [num-players]
-  {:num-players num-players
-   :round 1
+  {:num-players {:number num-players}
+   :round {:number 1}
    :player1 {:type :player :room :white-up}
    :player2 {:type :player :room :white-up}
    :player3 {:type :player :room :white-up}
@@ -53,8 +53,8 @@
    :red-reactor {:type :reactor :power 2 :max 3}
    :white-reactor {:type :reactor :power 3 :max 5}
    :blue-reactor {:type :reactor :power 2 :max 3}
-   :rods 3
-   :computer 3
+   :rods {:number 3}
+   :computer {:number 3}
    :red-track {:type :track :track (:t1 *tracks*)}
    :white-track {:type :track :track (:t2 *tracks*)}
    :blue-track {:type :track :track (:t3 *tracks*)}
@@ -73,19 +73,22 @@
     (assoc-in game [player :room] to-room)))
 
 (defn find-by-type
-  "Returns a sequence of all objects in the game of a specified type"
+  "Returns a sequence of all objects in the game of a specified type.
+  :id will be automatically assigned."
   [game selector]
-  (filter (fn [obj] (and (map? obj) (= (:type obj) selector))) (vals game)))
+  (let [matching-pairs (filter (fn [pair] (= (:type (second pair)) selector)) (seq game))]
+    (for [pair matching-pairs] (assoc (second pair) :id (first pair)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def game4 (create-game 4))
 
 (deftest create-game-should-have-players
-  (is (= 4 (:num-players game4)))
-  (is (= 1 (:round game4)))
-  (is (= :white-up (:room (:player1 game4))))
-  (is (= :white-up (:room (:player4 game4)))))
+  (are [x y] (= x y)
+    4 (:number (:num-players game4))
+    1 (:number (:round game4))
+    :white-up (:room (:player1 game4))
+    :white-up (:room (:player4 game4))))
 
 (deftest create-game-should-have-tracks
   (are [x y] (= x y)
@@ -120,8 +123,8 @@
 
 (deftest create-game-should-have-various-things
   (are [x y] (= x y)
-    3 (:rods game4)
-    3 (:computer game4)))
+    3 (:number (:rods game4))
+    3 (:number (:computer game4))))
 
 (deftest move-to-room-should-return-correct-room
   (is (= :white-up (move-to-room :blue-up :left)))
