@@ -54,6 +54,7 @@
    :white-reactor {:type :reactor :power 3 :max 5}
    :blue-reactor {:type :reactor :power 2 :max 3}
    :rods 3
+   :computer 3
    :red-track {:type :track :track (:t1 *tracks*)}
    :white-track {:type :track :track (:t2 *tracks*)}
    :blue-track {:type :track :track (:t3 *tracks*)}
@@ -70,6 +71,11 @@
   (let [from-room (:room (player game))
         to-room (move-to-room from-room action)]
     (assoc-in game [player :room] to-room)))
+
+(defn find-by-type
+  "Returns a sequence of all objects in the game of a specified type"
+  [game selector]
+  (filter (fn [obj] (and (map? obj) (= (:type obj) selector))) (vals game)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -112,9 +118,10 @@
       5 (:max wr)
       3 (:max br))))
 
-(deftest create-game-should-have-rods
+(deftest create-game-should-have-various-things
   (are [x y] (= x y)
-    3 (:rods game4)))
+    3 (:rods game4)
+    3 (:computer game4)))
 
 (deftest move-to-room-should-return-correct-room
   (is (= :white-up (move-to-room :blue-up :left)))
@@ -132,3 +139,9 @@
     (is (= :blue-up (:room (:player3 after3))))
     (is (= :white-up (:room (:player4 after3))))))
 
+(deftest find-by-type-should-find-correct-objects
+  (are [x y] (= x y)
+    3 (count (find-by-type game4 :shield))
+    4 (count (find-by-type game4 :player))
+    3 (count (find-by-type game4 :reactor))
+    0 (count (find-by-type game4 :threat))))
