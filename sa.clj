@@ -30,6 +30,9 @@
    :e1-10 [:meteroid 5 0 5 [] [] [:attack-hit-points] :no-rockets]
    :se1-01 [:frigate 7 2 2 4 8 [:attack 2] [:attack 3] [:attack 4]]})
 
+(def ^:dynamic *threat-fields*
+  [:name :health :shield :velocity :survive-points :kill-points :x-action :y-action :z-action])
+
 (def ^:dynamic *ship-layout*
   {:red-up {:left :red-up :change :red-down :right :white-up}
   :white-up {:left :red-up :change :white-down :right :blue-up}
@@ -78,6 +81,12 @@
   [game selector]
   (let [matching-pairs (filter (fn [pair] (= (:type (second pair)) selector)) (seq game))]
     (for [pair matching-pairs] (assoc (second pair) :id (first pair)))))
+
+(defn add-threat
+  "Add a specified threat into the game"
+  [game threat-id track-id turn]
+  (let [threat (apply assoc {} :type :threat :track track-id :turn turn (interleave *threat-fields* (threat-id *threats*)))]
+    (assoc game threat-id threat)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -148,3 +157,12 @@
     4 (count (find-by-type game4 :player))
     3 (count (find-by-type game4 :reactor))
     0 (count (find-by-type game4 :threat))))
+
+(deftest add-threat-should-work
+  (let [one-threat (add-threat game4 :e1-07 :red-track 2)
+        fighter (first (find-by-type one-threat :threat))]
+    (are [x y] (= x y)
+      :fighter (:name fighter)
+      :red-track (:track fighter)
+      2 (:turn fighter)
+      3 (:velocity fighter))))
