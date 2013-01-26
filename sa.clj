@@ -58,6 +58,7 @@
    :blue-reactor {:type :reactor :power 2 :max 3}
    :rods {:number 3}
    :computer {:number 3}
+   :missiles {:number 3}
    :red-track {:type :track :track (:t1 *tracks*)}
    :white-track {:type :track :track (:t2 *tracks*)}
    :blue-track {:type :track :track (:t3 *tracks*)}
@@ -133,6 +134,7 @@
 (deftest create-game-should-have-various-things
   (are [x y] (= x y)
     3 (:number (:rods game4))
+    3 (:number (:missiles game4))
     3 (:number (:computer game4))))
 
 (deftest move-to-room-should-return-correct-room
