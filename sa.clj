@@ -86,8 +86,17 @@
 (defn add-threat
   "Add a specified threat into the game"
   [game threat-id track-id turn]
-  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (track-id game))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
+  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (:track (track-id game)))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
     (assoc game threat-id threat)))
+
+(defn advance-threat
+  "Move a specified threat. Carry out any actions."
+  [game threat-id]
+  (let [threat (threat-id game)
+        track (:track ((:track threat) game))
+        position (:position threat)
+        velocity (:velocity threat)]
+    (assoc-in game [threat-id :position] (- position velocity))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -170,4 +179,13 @@
       :red-track (:track threat)
       2 (:turn threat)
       3 (:velocity threat)
-      (dec (count track)) (:position threat)))) 
+      (dec (count (:track track))) (:position threat)))) 
+
+(deftest threat-advance-should-work
+  (let [with-threat (add-threat game4 :e1-07 :red-track 2)
+        threat-before (:e1-07 with-threat)
+        after-1-advance (advance-threat with-threat :e1-07)
+        threat-after-1 (:e1-07 after-1-advance)]
+    (are [x y] (= x y)
+      9 (:position threat-before)
+      6 (:position threat-after-1))))
