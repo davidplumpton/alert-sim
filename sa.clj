@@ -59,10 +59,10 @@
    :rods {:number 3}
    :computer {:number 3}
    :missiles {:number 3}
-   :red-track {:type :track :track (:t1 *tracks*)}
-   :white-track {:type :track :track (:t2 *tracks*)}
-   :blue-track {:type :track :track (:t3 *tracks*)}
-   :internal-track {:type :track :track (:t4 *tracks*)}})
+   :red-track {:type :track :track-layout (:t1 *tracks*)}
+   :white-track {:type :track :track-layout (:t2 *tracks*)}
+   :blue-track {:type :track :track-layout (:t3 *tracks*)}
+   :internal-track {:type :track :track-layout (:t4 *tracks*)}})
 
 (defn move-to-room
   "Find the room to move to"
@@ -86,7 +86,7 @@
 (defn add-threat
   "Add a specified threat into the game"
   [game threat-id track-id turn]
-  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (:track (track-id game)))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
+  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (:track-layout (track-id game)))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
     (assoc game threat-id threat)))
 
 (defn find-threat-actions
@@ -98,7 +98,7 @@
   "Move a specified threat. Carry out any actions."
   [game threat-id]
   (let [threat (threat-id game)
-        track (:track ((:track threat) game))
+        track (:track-layout ((:track threat) game))
         position (:position threat)
         velocity (:velocity threat)
 	end-position (- position velocity)

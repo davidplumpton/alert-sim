@@ -19,10 +19,10 @@
 
 (deftest create-game-should-have-tracks
   (are [x y] (= x y)
-    (:t1 *tracks*) (:track (:red-track game4))
-    (:t2 *tracks*) (:track (:white-track game4))
-    (:t3 *tracks*) (:track (:blue-track game4))
-    (:t4 *tracks*) (:track (:internal-track game4))))
+    (:t1 *tracks*) (:track-layout (:red-track game4))
+    (:t2 *tracks*) (:track-layout (:white-track game4))
+    (:t3 *tracks*) (:track-layout (:blue-track game4))
+    (:t4 *tracks*) (:track-layout (:internal-track game4))))
 
 (deftest create-game-should-have-shields
   (let [rs (:red-shield game4)
@@ -87,7 +87,7 @@
       :red-track (:track threat)
       2 (:turn threat)
       3 (:velocity threat)
-      (dec (count (:track track))) (:position threat)))) 
+      (dec (count (:track-layout track))) (:position threat)))) 
 
 (deftest threat-advance-should-work
   (let [with-threat (create-game-with-threat)
