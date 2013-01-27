@@ -86,7 +86,7 @@
 (defn add-threat
   "Add a specified threat into the game"
   [game threat-id track-id turn]
-  (let [threat (apply assoc {} :type :threat :track track-id :turn turn (interleave *threat-fields* (threat-id *threats*)))]
+  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (track-id game))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
     (assoc game threat-id threat)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -161,10 +161,13 @@
     0 (count (find-by-type game4 :threat))))
 
 (deftest add-threat-should-work
-  (let [one-threat (add-threat game4 :e1-07 :red-track 2)
-        fighter (first (find-by-type one-threat :threat))]
+  (let [with-threat (add-threat game4 :e1-07 :red-track 2)
+        threat (first (find-by-type with-threat :threat))
+        track (:red-track with-threat)]
     (are [x y] (= x y)
-      :fighter (:name fighter)
-      :red-track (:track fighter)
-      2 (:turn fighter)
-      3 (:velocity fighter))))
+      :e1-07 (:id threat)
+      :fighter (:name threat)
+      :red-track (:track threat)
+      2 (:turn threat)
+      3 (:velocity threat)
+      (dec (count track)) (:position threat)))) 
