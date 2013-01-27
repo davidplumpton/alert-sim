@@ -89,17 +89,25 @@
   (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (:track (track-id game)))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
     (assoc game threat-id threat)))
 
+(defn find-threat-actions
+  "Return a list of any actions the threat crosses while advancing."
+  [game threat-id start end]
+  (if (< start 7) [:todo] []))
+
 (defn advance-threat
   "Move a specified threat. Carry out any actions."
   [game threat-id]
   (let [threat (threat-id game)
         track (:track ((:track threat) game))
         position (:position threat)
-        velocity (:velocity threat)]
-    (if (> position 8)
-      (assoc-in game [threat-id :position] (- position velocity))
-      (assoc-in (assoc-in game [threat-id :position] (- position velocity)) [:red-shield :power] 0))))
+        velocity (:velocity threat)
+	end-position (- position velocity)
+        actions (find-threat-actions game threat-id position end-position)]
+    (if (seq actions)
+      (assoc-in (assoc-in game [threat-id :position] end-position) [:red-shield :power] 0)
+      (assoc-in game [threat-id :position] (- position velocity)))))
 
 (defn threat-attack
-  [game threat-id action]
+  "A threat makes an attack"
+  [game threat-id force]
   (assoc-in game [:red-shield :power] 0))
