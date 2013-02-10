@@ -92,7 +92,10 @@
 (defn find-threat-actions
   "Return a list of any actions the threat crosses while advancing."
   [game threat-id start end]
-  (if (< start 7) [:todo] []))
+  (let [track-id (get-in game [threat-id :track])
+        layout (get-in game [track-id :track-layout])
+        crosses (subvec layout end start)]
+    (reverse (filter (fn [x] (not= x :_)) crosses))))
 
 (defn advance-threat
   "Move a specified threat. Carry out any actions."
