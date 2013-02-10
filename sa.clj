@@ -86,7 +86,7 @@
 (defn add-threat
   "Add a specified threat into the game"
   [game threat-id track-id turn]
-  (let [threat (apply assoc {} :type :threat :track track-id :position (dec (count (:track-layout (track-id game)))) :turn turn (interleave *threat-fields* (threat-id *threats*)))]
+  (let [threat (apply assoc {:type :threat :track track-id :position (dec (count (:track-layout (track-id game)))) :turn turn} (interleave *threat-fields* (threat-id *threats*)))]
     (assoc game threat-id threat)))
 
 (defn find-threat-actions
