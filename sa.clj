@@ -97,6 +97,28 @@
         crosses (subvec layout end start)]
     (reverse (filter (fn [x] (not= x :_)) crosses))))
 
+(defn update-threat-position
+  "Advance a threat alone the track only."
+  [game threat-id]
+  (let [threat (threat-id game)
+        position (:position threat)
+        velocity (:velocity threat)
+	end-position (- position velocity)]
+    (assoc-in game [threat-id :position] (- position velocity))))
+
+(defn threat-action
+  "Perform a single threat action."
+  [game threat-id action]
+  (assoc-in game [:red-shield :power] 0))
+
+(defn threat-actions
+  "Perform any threat actions."
+  [game threat-id actions]
+  (loop [game game actions actions]
+    (if (seq actions)
+      (recur (threat-action game threat-id (first actions)) (rest actions))
+      game)))
+
 (defn advance-threat
   "Move a specified threat. Carry out any actions."
   [game threat-id]
@@ -105,10 +127,9 @@
         position (:position threat)
         velocity (:velocity threat)
 	end-position (- position velocity)
-        actions (find-threat-actions game threat-id position end-position)]
-    (if (seq actions)
-      (assoc-in (assoc-in game [threat-id :position] end-position) [:red-shield :power] 0)
-      (assoc-in game [threat-id :position] (- position velocity)))))
+        actions (find-threat-actions game threat-id position end-position)
+        game-after-actions (threat-actions game threat-id actions)]
+    (update-threat-position game-after-actions threat-id)))
 
 (defn threat-attack
   "A threat makes an attack"
